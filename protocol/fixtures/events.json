@@ -1,0 +1,27 @@
+{
+  "description": "Out-of-order delivery must not advance a contiguous clock across a gap.",
+  "delivery_order": [2, 1],
+  "expected_clocks": [{}, {"device-a": 2}],
+  "events": [
+    {
+      "device_id": "device-a",
+      "seq": 1,
+      "event_id": "event-a-1",
+      "entity_id": "note-a",
+      "kind": "note",
+      "created_at": "2026-01-01T00:00:00+00:00",
+      "payload": {"title": "First", "text": "one", "tags": []},
+      "parent_event_id": null
+    },
+    {
+      "device_id": "device-a",
+      "seq": 2,
+      "event_id": "event-a-2",
+      "entity_id": "note-a",
+      "kind": "note",
+      "created_at": "2026-01-02T00:00:00+00:00",
+      "payload": {"title": "Second", "text": "two", "tags": []},
+      "parent_event_id": "event-a-1"
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowai.local/protocol/v1/event.schema.json",
+  "title": "Knowledge Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["device_id", "seq", "event_id", "entity_id", "kind", "created_at", "payload", "parent_event_id"],
+  "properties": {
+    "device_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "seq": {"type": "integer", "minimum": 1},
+    "event_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "entity_id": {"type": "string", "minLength": 1, "maxLength": 200},
+    "kind": {"enum": ["note", "document", "upsert", "delete"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "payload": {"type": "object"},
+    "parent_event_id": {"type": ["string", "null"], "maxLength": 200}
+  }
+}

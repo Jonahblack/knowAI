@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.KnowAI" parent="android:style/Theme.Material.Light.NoActionBar">
+        <item name="android:fontFamily">sans</item>
+        <item name="android:colorAccent">#315C4C</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+</resources>

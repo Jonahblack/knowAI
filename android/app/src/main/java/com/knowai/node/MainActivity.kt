@@ -1,0 +1,143 @@
+package com.knowai.node
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.knowai.node.model.MaterializedEntity
+import com.knowai.node.ui.MainViewModel
+import kotlinx.coroutines.launch
+
+class MainActivity : ComponentActivity() {
+    private val viewModel: MainViewModel by viewModels { MainViewModel.Factory(appGraph) }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            MaterialTheme {
+                Surface(Modifier.fillMaxSize()) {
+                    KnowledgeScreen(
+                        viewModel = viewModel,
+                        importUri = { lifecycleScope.launch { appGraph.importer.importUri(it) } },
+                        importPhoto = { lifecycleScope.launch { appGraph.importer.importBitmap(it) } },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun KnowledgeScreen(
+    viewModel: MainViewModel,
+    importUri: (android.net.Uri) -> Unit,
+    importPhoto: (android.graphics.Bitmap) -> Unit,
+) {
+    val entities by viewModel.entities.collectAsStateWithLifecycle()
+    val peers by viewModel.peers.collectAsStateWithLifecycle()
+    val status by viewModel.status.collectAsStateWithLifecycle()
+    var title by remember { mutableStateOf("") }
+    var body by remember { mutableStateOf("") }
+    var offer by remember { mutableStateOf("") }
+    val documentPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        if (it != null) importUri(it)
+    }
+    val camera = rememberLauncherForActivityResult(ActivityResultContracts.TakePicturePreview()) {
+        if (it != null) importPhoto(it)
+    }
+
+    LazyColumn(
+        modifier = Modifier.fillMaxSize().padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        item {
+            Text("knowAI", style = MaterialTheme.typography.headlineMedium)
+            Text("${entities.size} items · ${peers.size} peers")
+        }
+        item {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = viewModel::sync, enabled = !status.busy) { Text("Sync now") }
+                Button(onClick = { documentPicker.launch(arrayOf("*/*")) }) { Text("Add file") }
+                Button(onClick = { camera.launch(null) }) { Text("Camera") }
+            }
+            status.message?.let { Text(it, color = MaterialTheme.colorScheme.primary) }
+        }
+        item {
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("New note", style = MaterialTheme.typography.titleMedium)
+                    OutlinedTextField(title, { title = it }, label = { Text("Title") }, modifier = Modifier.fillMaxWidth())
+                    OutlinedTextField(body, { body = it }, label = { Text("Note") }, modifier = Modifier.fillMaxWidth())
+                    Button(onClick = {
+                        viewModel.addNote(title, body)
+                        title = ""
+                        body = ""
+                    }) { Text("Save") }
+                }
+            }
+        }
+        if (peers.isEmpty()) item {
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text("Pair a server", style = MaterialTheme.typography.titleMedium)
+                    Text("Paste the full pairing-offer JSON generated by the server.")
+                    OutlinedTextField(
+                        offer, { offer = it }, label = { Text("Pairing offer") },
+                        modifier = Modifier.fillMaxWidth(), minLines = 3,
+                    )
+                    Button(onClick = { viewModel.pair(offer, "Android") }) { Text("Pair") }
+                }
+            }
+        }
+        item {
+            Spacer(Modifier.height(4.dp))
+            Text("Knowledge", style = MaterialTheme.typography.titleLarge)
+        }
+        items(entities, key = { it.entityId }) { EntityCard(it) }
+    }
+}
+
+@Composable
+private fun EntityCard(entity: MaterializedEntity) {
+    val payload = entity.selected.payload
+    Card(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(12.dp)) {
+            Text(payload.get("title")?.asString ?: "Untitled", style = MaterialTheme.typography.titleMedium)
+            payload.get("text")?.asString?.let { Text(it) }
+            payload.getAsJsonObject("blob")?.get("filename")?.asString?.let { Text("File: $it") }
+            if (entity.hasConflict) {
+                Text(
+                    "Conflict: ${entity.branchHeads.size} branches retained",
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
+        }
+    }
+}

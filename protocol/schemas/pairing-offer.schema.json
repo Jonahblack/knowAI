@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowai.local/protocol/v1/pairing-offer.schema.json",
+  "title": "Pairing Offer",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["protocol_version", "device_id", "name", "public_key", "url", "code", "expires_at"],
+  "properties": {
+    "protocol_version": {"const": "1.0"},
+    "device_id": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1},
+    "public_key": {"type": "string", "minLength": 40},
+    "url": {"type": "string", "format": "uri"},
+    "code": {"type": "string", "pattern": "^[0-9]{8}$"},
+    "expires_at": {"type": "string", "format": "date-time"}
+  }
+}

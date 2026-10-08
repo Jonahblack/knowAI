@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://knowai.local/protocol/v1/event-page.schema.json",
+  "title": "Event Page",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["events", "next_cursor"],
+  "properties": {
+    "events": {
+      "type": "array",
+      "maxItems": 1000,
+      "items": {"$ref": "event.schema.json"}
+    },
+    "next_cursor": {"type": ["string", "null"]}
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "description": "Deterministic Ed25519 request-signature vector. Base64 values use URL-safe encoding without padding.",
+  "private_key_seed": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "public_key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg",
+  "method": "POST",
+  "path": "/sync/v1/events/query",
+  "timestamp": "1791417600",
+  "nonce": "123e4567-e89b-12d3-a456-426614174000",
+  "body": "{\"clock\":{},\"limit\":2}",
+  "content_sha256": "0efb0cb29db2fffb24c166878833084a180d229eec86e23e1928278ba81a2f26",
+  "signature": "jEgqRSTqdPf7DtV78VoUl5ozFmsC63ogh8ws3l5P0F3-i3XpmHwZQZ66cPvO8E42ZtR6_DjPb40EF5nedIcTBA"
+}

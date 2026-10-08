@@ -1,0 +1,8 @@
+server/.venv/
+server/__pycache__/
+server/.pytest_cache/
+server/**/*.py[cod]
+server/.coverage
+android/.gradle/
+android/**/build/
+*.local
